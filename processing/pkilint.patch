@@ -1,0 +1,969 @@
+Subject: [PATCH] prepare patch
+fix output
+add check for decoded_value is None
+fix multiple oids
+added not allowed signature algorithm encodings
+add oid_metadata.json from https://oidref.com to get more metadata
+add more output to Validation missing attribute
+---
+Index: pkilint/cabf/smime/smime_name.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pkilint/cabf/smime/smime_name.py b/pkilint/cabf/smime/smime_name.py
+--- a/pkilint/cabf/smime/smime_name.py	(revision 5b9b884a6dd7f4fdb31996bcf77cb2a648d0fa6e)
++++ b/pkilint/cabf/smime/smime_name.py	(revision 9a72e93c8f04cc34482680438ff4b9899d4031ab)
+@@ -1,4 +1,5 @@
+ import validators
++import json
+ from pyasn1_alt_modules import rfc5280, rfc8398
+ 
+ from pkilint import validation, pkix, oid
+@@ -14,6 +15,699 @@
+ SHALL_NOT = pkix.Rfc2119Word.SHALL_NOT
+ MAY = pkix.Rfc2119Word.MAY
+ 
++_OID_METADATA = '''
++{
++    "2.5.4.0" : {
++        "OID": "2.5.4.0",
++        "Name": "objectClass",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "Object classes"
++    },
++    "2.5.4.1" : {
++        "OID": "2.5.4.1",
++        "Name": "aliasedEntryName",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Attribute type \\"Aliased entry name\\""
++    },
++    "2.5.4.2" : {
++        "OID": "2.5.4.2",
++        "Name": "knowledgeInformation",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "knowledgeInformation attribute type"
++    },
++    "2.5.4.3" : {
++        "OID": "2.5.4.3",
++        "Name": "commonName",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Common name"
++    },
++    "2.5.4.4" : {
++        "OID": "2.5.4.4",
++        "Name": "surname",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Attribute \\"surname\\""
++    },
++    "2.5.4.5" : {
++        "OID": "2.5.4.5",
++        "Name": "serialNumber",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Serial number attribute type"
++    },
++    "2.5.4.6" : {
++        "OID": "2.5.4.6",
++        "Name": "countryName",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Country name"
++    },
++    "2.5.4.7" : {
++        "OID": "2.5.4.7",
++        "Name": "localityName",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "Locality Name"
++    },
++    "2.5.4.8" : {
++        "OID": "2.5.4.8",
++        "Name": "stateOrProvinceName",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "State or Province name"
++    },
++    "2.5.4.9" : {
++        "OID": "2.5.4.9",
++        "Name": "streetAddress",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "Street address"
++    },
++    "2.5.4.10" : {
++        "OID": "2.5.4.10",
++        "Name": "organizationName",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "Organization name"
++    },
++    "2.5.4.11" : {
++        "OID": "2.5.4.11",
++        "Name": "organizationUnitName",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "Organization unit name"
++    },
++    "2.5.4.12" : {
++        "OID": "2.5.4.12",
++        "Name": "title",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Title attribute type"
++    },
++    "2.5.4.13" : {
++        "OID": "2.5.4.13",
++        "Name": "description",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Description attribute type"
++    },
++    "2.5.4.14" : {
++        "OID": "2.5.4.14",
++        "Name": "searchGuide",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Search guide attribute type"
++    },
++    "2.5.4.15" : {
++        "OID": "2.5.4.15",
++        "Name": "businessCategory",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Business category attribute type"
++    },
++    "2.5.4.16" : {
++        "OID": "2.5.4.16",
++        "Name": "postalAddress",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "Postal address attribute type"
++    },
++    "2.5.4.17" : {
++        "OID": "2.5.4.17",
++        "Name": "postalCode",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "Postal code attribute type"
++    },
++    "2.5.4.18" : {
++        "OID": "2.5.4.18",
++        "Name": "postOfficeBox",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "Post office box attribute type"
++    },
++    "2.5.4.19" : {
++        "OID": "2.5.4.19",
++        "Name": "physicalDeliveryOfficeName",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "physicalDeliveryOfficeName attribute type"
++    },
++    "2.5.4.20" : {
++        "OID": "2.5.4.20",
++        "Name": "telephoneNumber",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "Telephone number attribute type"
++    },
++    "2.5.4.21" : {
++        "OID": "2.5.4.21",
++        "Name": "telexNumber",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "Telex number attribute type"
++    },
++    "2.5.4.22" : {
++        "OID": "2.5.4.22",
++        "Name": "teletexTerminalIdentifier",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "Teletex terminal identifier attribute type"
++    },
++    "2.5.4.23" : {
++        "OID": "2.5.4.23",
++        "Name": "facsimileTelephoneNumber",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "Facsimile telephone number attribute type"
++    },
++    "2.5.4.24" : {
++        "OID": "2.5.4.24",
++        "Name": "x121Address",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "X121 address attribute type"
++    },
++    "2.5.4.25" : {
++        "OID": "2.5.4.25",
++        "Name": "internationalISDNNumber",
++        "Sub children": "2",
++        "Sub Nodes Total": "3",
++        "Description": "International ISDN (Integrated Services Digital Network) number attribute type"
++    },
++    "2.5.4.26" : {
++        "OID": "2.5.4.26",
++        "Name": "registeredAddress",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Registered address attribute type"
++    },
++    "2.5.4.27" : {
++        "OID": "2.5.4.27",
++        "Name": "destinationIndicator",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Destination indicator attribute type"
++    },
++    "2.5.4.28" : {
++        "OID": "2.5.4.28",
++        "Name": "preferredDeliveryMethod",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Preferred delivery method attribute type"
++    },
++    "2.5.4.29" : {
++        "OID": "2.5.4.29",
++        "Name": "presentationAddress",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Presentation address attribute type"
++    },
++    "2.5.4.30" : {
++        "OID": "2.5.4.30",
++        "Name": "supportedApplicationContext",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Supported application context attribute type"
++    },
++    "2.5.4.31" : {
++        "OID": "2.5.4.31",
++        "Name": "member",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Member attribute type"
++    },
++    "2.5.4.32" : {
++        "OID": "2.5.4.32",
++        "Name": "owner",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Owner attribute type"
++    },
++    "2.5.4.33" : {
++        "OID": "2.5.4.33",
++        "Name": "roleOccupant",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Role occupant attribute type"
++    },
++    "2.5.4.34" : {
++        "OID": "2.5.4.34",
++        "Name": "seeAlso",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "seeAlso attribute type"
++    },
++    "2.5.4.35" : {
++        "OID": "2.5.4.35",
++        "Name": "userPassword",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "userPassword attribute type"
++    },
++    "2.5.4.36" : {
++        "OID": "2.5.4.36",
++        "Name": "userCertificate",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "userCertificate attribute type"
++    },
++    "2.5.4.37" : {
++        "OID": "2.5.4.37",
++        "Name": "cACertificate",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "cAcertificate attribute type"
++    },
++    "2.5.4.38" : {
++        "OID": "2.5.4.38",
++        "Name": "authorityRevocationList",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "authorityRevocationList attribute type"
++    },
++    "2.5.4.39" : {
++        "OID": "2.5.4.39",
++        "Name": "certificateRevocationList",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "certificateRevocationList attribute type"
++    },
++    "2.5.4.40" : {
++        "OID": "2.5.4.40",
++        "Name": "crossCertificatePair",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "crossCertificatePair attribute type"
++    },
++    "2.5.4.41" : {
++        "OID": "2.5.4.41",
++        "Name": "name",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "Name attribute type"
++    },
++    "2.5.4.42" : {
++        "OID": "2.5.4.42",
++        "Name": "givenName",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Given name attribute type"
++    },
++    "2.5.4.43" : {
++        "OID": "2.5.4.43",
++        "Name": "initials",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Initials attribute type"
++    },
++    "2.5.4.44" : {
++        "OID": "2.5.4.44",
++        "Name": "generationQualifier",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "generationQualifier attribute type"
++    },
++    "2.5.4.45" : {
++        "OID": "2.5.4.45",
++        "Name": "uniqueIdentifier",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "uniqueIdentifier attribute type"
++    },
++    "2.5.4.46" : {
++        "OID": "2.5.4.46",
++        "Name": "dnQualifier",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "dnQualifier attribute type"
++    },
++    "2.5.4.47" : {
++        "OID": "2.5.4.47",
++        "Name": "enhancedSearchGuide",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "enhancedSearchGuide attribute type"
++    },
++    "2.5.4.48" : {
++        "OID": "2.5.4.48",
++        "Name": "protocolInformation",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "protocolInformation attribute type"
++    },
++    "2.5.4.49" : {
++        "OID": "2.5.4.49",
++        "Name": "distinguishedName",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "distinguishedName attribute type"
++    },
++    "2.5.4.50" : {
++        "OID": "2.5.4.50",
++        "Name": "uniqueMember",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "uniqueMember attribute type"
++    },
++    "2.5.4.51" : {
++        "OID": "2.5.4.51",
++        "Name": "houseIdentifier",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "houseIdentifier attribute type"
++    },
++    "2.5.4.52" : {
++        "OID": "2.5.4.52",
++        "Name": "supportedAlgorithms",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "supportedAlgorithms attribute type"
++    },
++    "2.5.4.53" : {
++        "OID": "2.5.4.53",
++        "Name": "deltaRevocationList",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "deltaRevocationList attribute type"
++    },
++    "2.5.4.54" : {
++        "OID": "2.5.4.54",
++        "Name": "dmdName",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "DMD Name attribute type"
++    },
++    "2.5.4.55" : {
++        "OID": "2.5.4.55",
++        "Name": "clearance",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Attribute type \\"Clearance\\""
++    },
++    "2.5.4.56" : {
++        "OID": "2.5.4.56",
++        "Name": "defaultDirQop",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Attribute type \\"Default Dir Qop\\""
++    },
++    "2.5.4.57" : {
++        "OID": "2.5.4.57",
++        "Name": "attributeIntegrityInfo",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Attribute type \\"Attribute integrity info\\""
++    },
++    "2.5.4.58" : {
++        "OID": "2.5.4.58",
++        "Name": "attributeCertificate",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "attributeCertificate attribute type"
++    },
++    "2.5.4.59" : {
++        "OID": "2.5.4.59",
++        "Name": "attributeCertificateRevocationList",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "attributeCertificateRevocationList attribute type"
++    },
++    "2.5.4.60" : {
++        "OID": "2.5.4.60",
++        "Name": "confKeyInfo",
++        "Sub children": "1",
++        "Sub Nodes Total": "1",
++        "Description": "Attribute type \\"Conf key info\\""
++    },
++    "2.5.4.61" : {
++        "OID": "2.5.4.61",
++        "Name": "aACertificate",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "aACertificate attribute type"
++    },
++    "2.5.4.62" : {
++        "OID": "2.5.4.62",
++        "Name": "attributeDescriptorCertificate",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "attributeDescriptorCertificate attribute type"
++    },
++    "2.5.4.63" : {
++        "OID": "2.5.4.63",
++        "Name": "attributeAuthorityRevocationList",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "attributeAuthorityRevocationList attribute type"
++    },
++    "2.5.4.64" : {
++        "OID": "2.5.4.64",
++        "Name": "family-information",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "Family-information attribute type"
++    },
++    "2.5.4.65" : {
++        "OID": "2.5.4.65",
++        "Name": "pseudonym",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "Pseudonym attribute type"
++    },
++    "2.5.4.66" : {
++        "OID": "2.5.4.66",
++        "Name": "communicationsService",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "communicationsService attribute type"
++    },
++    "2.5.4.67" : {
++        "OID": "2.5.4.67",
++        "Name": "communicationsNetwork",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "communicationsNetwork attribute type"
++    },
++    "2.5.4.68" : {
++        "OID": "2.5.4.68",
++        "Name": "certificationPracticeStmt",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "certificationPracticeStmt attribute type (Certification practice statement attribute)"
++    },
++    "2.5.4.69" : {
++        "OID": "2.5.4.69",
++        "Name": "certificatePolicy",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "certificatePolicy attribute type"
++    },
++    "2.5.4.70" : {
++        "OID": "2.5.4.70",
++        "Name": "pkiPath",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "pkiPath attribute type"
++    },
++    "2.5.4.71" : {
++        "OID": "2.5.4.71",
++        "Name": "privPolicy",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "privPolicy attribute type"
++    },
++    "2.5.4.72" : {
++        "OID": "2.5.4.72",
++        "Name": "role",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "role attribute type"
++    },
++    "2.5.4.73" : {
++        "OID": "2.5.4.73",
++        "Name": "delegationPath",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "delegationPath attribute type"
++    },
++    "2.5.4.74" : {
++        "OID": "2.5.4.74",
++        "Name": "protPrivPolicy",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "protPrivPolicy ATTRIBUTE ::= {\\nWITH SYNTAX AttributeCertificate\\nEQUALITY MATCHING RULE attributeCertificateExactMatch\\nID id-at-…"
++    },
++    "2.5.4.75" : {
++        "OID": "2.5.4.75",
++        "Name": "xMLPrivilegeInfo",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "xmlPrivilegeInfo ATTRIBUTE ::= {\\nWITH SYNTAX UTF8String --contains XML-encoded privilege information\\nID id-at-xMLPrivilegeInfo }"
++    },
++    "2.5.4.76" : {
++        "OID": "2.5.4.76",
++        "Name": "xmlPrivPolicy",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "None"
++    },
++    "2.5.4.77" : {
++        "OID": "2.5.4.77",
++        "Name": "uuidpair",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "uUIDPair"
++    },
++    "2.5.4.78" : {
++        "OID": "2.5.4.78",
++        "Name": "tagOid",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "tagOid ATTRIBUTE ::= {\\nWITH SYNTAX OBJECT IDENTIFIER\\nEQUALITY MATCHING RULE objectIdentifierMatch\\nSINGLE VALUE TRUE\\nLDAP-SYNTAX…"
++    },
++    "2.5.4.79" : {
++        "OID": "2.5.4.79",
++        "Name": "uiiFormat",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "uiiFormat ATTRIBUTE ::= {\\nWITH SYNTAX UiiFormat\\nSINGLE VALUE TRUE\\nLDAP-SYNTAX uiiForm.&amp;id\\nLDAP-NAME {\\"uiiFormat\\"}\\nID id-at-…"
++    },
++    "2.5.4.80" : {
++        "OID": "2.5.4.80",
++        "Name": "uiiInUrh",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "uiiInUrn ATTRIBUTE ::= {\\nWITH SYNTAX UTF8String\\nEQUALITY MATCHING RULE caseExactMatch\\nSINGLE VALUE TRUE\\nLDAP-SYNTAX directorySt…"
++    },
++    "2.5.4.81" : {
++        "OID": "2.5.4.81",
++        "Name": "contentUrl",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "contentUrl ATTRIBUTE ::= {\\nSUBTYPE OF url\\nLDAP-SYNTAX directoryString.&amp;id\\nLDAP-NAME {\\"contentUrl\\"}\\nID id-at-contentUrl }"
++    },
++    "2.5.4.82" : {
++        "OID": "2.5.4.82",
++        "Name": "permission",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "permission ATTRIBUTE ::= {\\nWITH SYNTAX DualStringSyntax\\nEQUALITY MATCHING RULE dualStringMatch\\nID id-at-permission }"
++    },
++    "2.5.4.83" : {
++        "OID": "2.5.4.83",
++        "Name": "uri",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "uri ATTRIBUTE ::= {\\nWITH SYNTAX URI\\nEQUALITY MATCHING RULE uriMatch\\nLDAP-SYNTAX directoryString.&amp;id\\nLDAP-NAME {\\"uri\\"}\\nID id…"
++    },
++    "2.5.4.84" : {
++        "OID": "2.5.4.84",
++        "Name": "pwdAttribute",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "pwdAttribute ATTRIBUTE ::= {\\nWITH SYNTAX ATTRIBUTE.&amp;id\\nEQUALITY MATCHING RULE objectIdentifierMatch\\nSINGLE VALUE TRUE\\nLDAP-…"
++    },
++    "2.5.4.85" : {
++        "OID": "2.5.4.85",
++        "Name": "userPwd",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "userPwd ATTRIBUTE ::= {\\nWITH SYNTAX UserPwd\\nEQUALITY MATCHING RULE userPwdMatch\\nSINGLE VALUE TRUE\\nLDAP-SYNTAX userPwdDescriptio…"
++    },
++    "2.5.4.86" : {
++        "OID": "2.5.4.86",
++        "Name": "urn",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "urn ATTRIBUTE ::= {\\nSUBTYPE OF uri\\nLDAP-SYNTAX directoryString.&amp;id\\nLDAP-NAME {\\"urn\\"}\\nID id-at-urn }"
++    },
++    "2.5.4.87" : {
++        "OID": "2.5.4.87",
++        "Name": "url",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "url ATTRIBUTE ::= {\\nSUBTYPE OF uri\\nLDAP-SYNTAX directoryString.&amp;id\\nLDAP-NAME {\\"url\\"}\\nID id-at-url }"
++    },
++    "2.5.4.88" : {
++        "OID": "2.5.4.88",
++        "Name": "utmCoordinates",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "utmCoordinates ATTRIBUTE ::= {\\nWITH SYNTAX UtmCoordinates\\nSINGLE VALUE TRUE\\nLDAP-SYNTAX utmCoords.&amp;id\\nLDAP-NAME {\\"utmCoordi…"
++    },
++    "2.5.4.89" : {
++        "OID": "2.5.4.89",
++        "Name": "urnC",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "urnC ATTRIBUTE ::= {\\nWITH SYNTAX PrintableString\\nEQUALITY MATCHING RULE caseExactMatch\\nSINGLE VALUE TRUE\\nLDAP-SYNTAX printableS…"
++    },
++    "2.5.4.90" : {
++        "OID": "2.5.4.90",
++        "Name": "uii",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "uii ATTRIBUTE ::= {\\nWITH SYNTAX BIT STRING\\nEQUALITY MATCHING RULE bitStringMatch\\nLDAP-SYNTAX bitString.&amp;id\\nLDAP-NAME {\\"uii\\"…"
++    },
++    "2.5.4.91" : {
++        "OID": "2.5.4.91",
++        "Name": "epc",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "epc ATTRIBUTE ::= {\\nWITH SYNTAX BIT STRING\\nEQUALITY MATCHING RULE bitStringMatch\\nLDAP-SYNTAX bitString.&amp;id\\nLDAP-NAME {\\"epc\\"…"
++    },
++    "2.5.4.92" : {
++        "OID": "2.5.4.92",
++        "Name": "tagAfi",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "tagAfi ATTRIBUTE ::= {\\nWITH SYNTAX OCTET STRING\\nEQUALITY MATCHING RULE octetStringMatch\\nLDAP-SYNTAX octetString.&amp;id\\nLDAP-NA…"
++    },
++    "2.5.4.93" : {
++        "OID": "2.5.4.93",
++        "Name": "epcFormat",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "epcFormat ATTRIBUTE ::= {\\nWITH SYNTAX EpcFormat\\nSINGLE VALUE TRUE\\nLDAP-SYNTAX epcForm.&amp;id\\nLDAP-NAME {\\"epcFormat\\"}\\nID id-at-…"
++    },
++    "2.5.4.94" : {
++        "OID": "2.5.4.94",
++        "Name": "epcInUrn",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "epcInUrn ATTRIBUTE ::= {\\nSUBTYPE OF urn\\nSINGLE VALUE TRUE\\nLDAP-SYNTAX directoryString.&amp;id\\nLDAP-NAME {\\"epcInUrn\\"}\\nID id-at-e…"
++    },
++    "2.5.4.95" : {
++        "OID": "2.5.4.95",
++        "Name": "ldapUrl",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "ldapUrl ATTRIBUTE ::= {\\nSUBTYPE OF url\\nLDAP-SYNTAX directoryString.&amp;id\\nLDAP-NAME {\\"ldapUrl\\"}\\nID id-at-ldapUrl }"
++    },
++    "2.5.4.96" : {
++        "OID": "2.5.4.96",
++        "Name": "ldapUrl",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "tagLocation ATTRIBUTE ::= {\\nSUBTYPE OF utmCoordinates\\nSINGLE VALUE TRUE\\nLDAP-SYNTAX utmCoords.&amp;id\\nLDAP-NAME {\\"tagLocation\\"}…"
++    },
++    "2.5.4.97" : {
++        "OID": "2.5.4.97",
++        "Name": "organizationIdentifier",
++        "Sub children": "0",
++        "Sub Nodes Total": "0",
++        "Description": "organizationIdentifier ATTRIBUTE ::= {\\nWITH SYNTAX UnboundedDirectoryString\\nEQUALITY MATCHING RULE caseIgnoreMatch\\nSUBSTRINGS M…"
++    }
++}
++'''
++
++
++
+ _MV_ATTRIBUTES = {
+     rfc5280.id_at_commonName: (MAY, MAY, MAY),
+     rfc5280.id_at_organizationName: (SHALL_NOT, SHALL_NOT, SHALL_NOT),
+@@ -165,18 +859,23 @@
+         for rdn in node.children.values():
+             attributes.update((atv.children['type'].pdu for atv in rdn.children.values()))
+ 
++        # extract json
++        oid_metadata = json.loads(_OID_METADATA)
++
+         findings.extend((
+             validation.ValidationFindingDescription(self.VALIDATION_MISSING_ATTRIBUTE,
+-                                                    f'Missing required attribute: {a}')
++                                                    f'{oid_metadata[str(a)]["Name"]}')      # only show oid name 
+             for a in self._required_attributes - attributes
+         ))
+ 
+         if self._required_one_of_n_attributes and len(self._required_one_of_n_attributes.intersection(attributes)) == 0:
+             oids = oid.format_oids(self._required_one_of_n_attributes)
+-
+-            findings.append(validation.ValidationFindingDescription(self.VALIDATION_MISSING_ATTRIBUTE,
+-                                                                    f'Missing one of these required attributes: {oids}')
+-                            )
++            oids = oids.split(", ")
++            oids_list = []
++            for o in oids:
++                oids_list.append(oid_metadata[str(o)]["Name"])
++            oids_str = ', '.join(map(str, oids_list))
++            findings.append(validation.ValidationFindingDescription(self.VALIDATION_MISSING_ATTRIBUTE, oids_str))
+ 
+         findings.extend((
+             validation.ValidationFindingDescription(self.VALIDATION_PROHIBITED_ATTRIBUTE,
+@@ -468,3 +1167,4 @@
+             email_addresses.append(value.navigate('value').child[1].pdu)
+ 
+     return email_addresses
++
+Index: pkilint/pkix/algorithm.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pkilint/pkix/algorithm.py b/pkilint/pkix/algorithm.py
+--- a/pkilint/pkix/algorithm.py	(revision 6b7f9cf8177b2e254431897a2102f00f06b1ef7a)
++++ b/pkilint/pkix/algorithm.py	(revision 9a72e93c8f04cc34482680438ff4b9899d4031ab)
+@@ -33,6 +33,44 @@
+     rfc4055.id_RSASSA_PSS: rfc4055.RSASSA_PSS_params(),
+ }
+ 
++ALLOWED_SIGNATURE_ALGORITHM_ENCODINGS = set(
++    map(
++        binascii.a2b_hex, [
++            # RSASSA‐PKCS1‐v1_5 with SHA‐256
++            '300d06092a864886f70d01010b0500',
++            # RSASSA‐PKCS1‐v1_5 with SHA‐384
++            '300d06092a864886f70d01010c0500',
++            # RSASSA‐PKCS1‐v1_5 with SHA‐512
++            '300d06092a864886f70d01010d0500',
++            # RSASSA‐PSS with SHA‐256, MGF‐1 with SHA‐256, and a salt length of 32 bytes
++            '304106092a864886f70d01010a3034a00f300d060960864801650'
++            '30402010500a11c301a06092a864886f70d010108300d06096086480165030402010500a203020120',
++            # RSASSA‐PSS with SHA‐384, MGF‐1 with SHA‐384, and a salt length of 48 bytes
++            '304106092a864886f70d01010a3034a00f300d060960864801650'
++            '30402020500a11c301a06092a864886f70d010108300d06096086480165030402020500a203020130',
++            # RSASSA‐PSS with SHA‐512, MGF‐1 with SHA‐512, and a salt length of 64 bytes
++            '304106092a864886f70d01010a3034a00f300d060960864801650'
++            '30402030500a11c301a06092a864886f70d010108300d06096086480165030402030500a203020140',
++            # ECDSA with SHA‐256
++            '300a06082a8648ce3d040302',
++            # ECDSA with SHA‐384
++            '300a06082a8648ce3d040303',
++            # Ed25519
++            '300506032b6570',
++            # Ed448
++            '300506032b6571'
++        ]
++    )
++)
++
++# must be extended
++not_allowed_signature_algorithm_encodings = {
++    # src: https://www.mozilla.org/en-US/about/governance/policies/security-group/certs/policy/
++    "300d06092a864886f70d0101050500" : "RSASSA-PKCS1-v1_5 with SHA-1",
++    # ECDSA with SHA‐512, src: https://letsencrypt.org/documents/isrg-cp-v3.3/
++    "300a06082a8648ce3d040304" : "ECDSA with SHA‐512"
++}
++
+ 
+ class AlgorithmIdentifierDecodingValidator(validation.DecodingValidator):
+     def __init__(self, *, decode_func, **kwargs):
+@@ -53,11 +91,15 @@
+ 
+     def validate(self, node):
+         encoded = encode(node.pdu)
+-
+         if encoded not in self._allowed_encodings:
+             encoded_str = binascii.hexlify(encoded).decode('us-ascii')
++            try:
++                # output for prohibited signature algorithm encoding
++                signature_algorithms_str = not_allowed_signature_algorithm_encodings[str(encoded_str)]
++            except:
++                signature_algorithms_str = "unknown" 
+ 
+             raise validation.ValidationFindingEncountered(
+                 self._validations[0],
+-                f'Prohibited encoding: {encoded_str}'
++                encoded_str
+             )
+Index: pkilint/cabf/smime/smime_extension.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pkilint/cabf/smime/smime_extension.py b/pkilint/cabf/smime/smime_extension.py
+--- a/pkilint/cabf/smime/smime_extension.py	(revision 1f211d341b8e3f3a939334e4630bec45bb206917)
++++ b/pkilint/cabf/smime/smime_extension.py	(revision f932dc6fec3fc8a1c64f81a16204fdca48583269)
+@@ -12,6 +12,19 @@
+ from pkilint.pkix import extension
+ from pkilint.pkix.certificate.certificate_extension import KeyUsageBitName
+ 
++oid_dict = {
++    "1.3.6.1.5.5.7.3.1":  "id_kp_serverAuth", 
++    "1.3.6.1.5.5.7.3.2": "id_kp_clientAuth",      
++    "1.3.6.1.5.5.7.3.3": "id_kp_codeSigning",
++    "1.3.6.1.5.5.7.3.4": "id_kp_emailProtection",
++    "1.3.6.1.5.5.7.3.5": "id-kp-ipsecEndSystem",
++    "1.3.6.1.5.5.7.3.6": "id-kp-ipsecTunnel",
++    "1.3.6.1.5.5.7.3.7": "id-kp-ipsecUser",
++    "1.3.6.1.5.5.7.3.8": "id_kp_timeStamping",          # rfc5280.id_kp_timeStamping
++    "1.3.6.1.5.5.7.3.9": "OCSPSigning",                 # str(rfc5280.id_kp_OCSPSigning)
++    "1.3.6.1.5.5.7.3.19": "Control And Provisioning of Wireless Access Points, Wireless Termination Points",
++    "2.5.29.37.0": "anyExtendedKeyUsage" 
++}
+ 
+ class CertificatePoliciesPresenceValidator(extension.ExtensionPresenceValidator):
+     VALIDATION_CERTIFICATE_POLICIES_EXTENSION_ABSENT = validation.ValidationFinding(
+@@ -269,10 +282,20 @@
+             prohibited_kps = kp_oids.intersection(self._LEGACY_MP_PROHIBITED_EKUS)
+ 
+         if len(prohibited_kps) > 0:
++            oids = str(oid.format_oids(prohibited_kps))
++            oids = oids.split(", ")
++            oids_list = []
++            try:
++                for o in oids:
++                    oids_list.append(oid_dict[str(o)])
++                oid_str = ', '.join(map(str, oids_list))
++            except:
++                oid_str = oid.format_oids(prohibited_kps)
++
+             findings.append(
+                 validation.ValidationFindingDescription(
+                     self.VALIDATION_PROHIBITED_EKU_PRESENT,
+-                    f'Prohibited EKU(s) present: {oid.format_oids(prohibited_kps)}'
++                    oid_str # f'Prohibited EKU(s) present: {oid.format_oids(prohibited_kps)}'  # find missing eku 
+                 )
+             )
+ 
+@@ -364,7 +387,7 @@
+             ku_str = ', '.join(sorted(prohibited_kus))
+ 
+             raise validation.ValidationFindingEncountered(
+-                self.VALIDATION_PROHIBITED_KU_PRESENT, f'Prohibited KUs present: {ku_str}'
++                self.VALIDATION_PROHIBITED_KU_PRESENT, ku_str  # simplify output, old representation was f'Prohibited KUs present: {ku_str}'
+             )
+ 
+ 
+Index: pkilint/document.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pkilint/document.py b/pkilint/document.py
+--- a/pkilint/document.py	(revision 88521bf9842c50be6b80b0510a741b501eb3c65f)
++++ b/pkilint/document.py	(revision 390c002ef3e04aeb6881d5cc98734e0e82966fc0)
+@@ -265,7 +265,6 @@
+     # convert PDU class name to camelCase
+     return name[0].lower() + name[1:]
+ 
+-
+ class SubstrateDecodingFailedError(ValueError):
+     def __init__(
+             self, source_document: Document, pdu_instance: Optional[Asn1Type], parent_node: Optional[PDUNode],
+@@ -307,21 +306,23 @@
+ 
+         decoded_pdu_name = get_node_name_for_pdu(decoded)
+     else:
++        decoded, rest = None, None
+         try:
+-            decoded, rest = decode(substrate, asn1Spec=pdu_instance)
+-        except (ValueError, PyAsn1Error) as e:
+-            raise SubstrateDecodingFailedError(source_document, pdu_instance, parent_node, str(e)) from e
++            decoded, rest = decode(substrate, asn1Spec=pdu_instance) # something went wrong here
++        except Exception as e:
++            return
+ 
+-        decoded_pdu_name = get_node_name_for_pdu(decoded)
+-        type_name = decoded.__class__.__name__
++        if decode is not None:
++            decoded_pdu_name = get_node_name_for_pdu(decoded)
++            type_name = decoded.__class__.__name__
+ 
+-        if len(rest) > 0:
+-            rest_hex = bytes(rest).hex()
++            if len(rest) > 0:
++                rest_hex = bytes(rest).hex()
+ 
+-            raise SubstrateDecodingFailedError(
+-                source_document, pdu_instance, parent_node,
+-                f'{len(rest)} unexpected octet(s) following "{type_name}" TLV: "{rest_hex}"'
+-            )
++                raise SubstrateDecodingFailedError(
++                    source_document, pdu_instance, parent_node,
++                    f'{len(rest)} unexpected octet(s) following "{type_name}" TLV: "{rest_hex}"'
++                )
+ 
+         try:
+             encoded = encode(decoded)
+Index: pkilint/cabf/smime/__init__.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pkilint/cabf/smime/__init__.py b/pkilint/cabf/smime/__init__.py
+--- a/pkilint/cabf/smime/__init__.py	(revision 03419aff7970f6cf5b9cce223f7ba4494aa7a20b)
++++ b/pkilint/cabf/smime/__init__.py	(revision f932dc6fec3fc8a1c64f81a16204fdca48583269)
+@@ -69,7 +69,11 @@
+         attr_value_pdu = attr.children['value'].pdu
+ 
+         decoded_value = document.decode_substrate(cert, attr_value_pdu, attr_asn1_cls())
+-
++        
++        # Check if decoded_value is None before accessing child attribute
++        if decoded_value is None:
++            return None
++        
+         # assume DirectoryString
+         _, attr_value_choice_value = decoded_value.child
+ 
+Index: pkilint/__init__.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pkilint/__init__.py b/pkilint/__init__.py
+--- a/pkilint/__init__.py	(revision 5385b916edb9d8b0a98c2630f18803f6de9c5e7a)
++++ b/pkilint/__init__.py	(revision f932dc6fec3fc8a1c64f81a16204fdca48583269)
+@@ -1,0 +1,1 @@
++PATCHED = True
+\ No newline at end of file

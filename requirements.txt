@@ -1,0 +1,25 @@
+matplotlib
+numpy
+pandas
+cryptography==42.0.5  # DON'T EDIT VERSION
+pymongo
+progress
+ujson
+requests
+gmpy2
+sympy
+galois
+jc
+geoip2
+scipy
+seaborn
+certvalidator
+ldap3
+pyopenssl
+badkeys==0.0.12  # DON'T EDIT VERSION
+git+https://github.com/digicert/pkilint.git@5b9b884a6dd7f4fdb31996bcf77cb2a648d0fa6e
+asn1crypto
+redis[hiredis]
+factordb-python
+python-ldap==3.4.4  # DON'T EDIT VERSION
+./chain_verification

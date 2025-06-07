@@ -1,0 +1,5 @@
+{
+    "03_test_bundle.crt": true,
+    "02_test_bundle.crt": false,
+    "01_test_bundle.crt": true
+}
