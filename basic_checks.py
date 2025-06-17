@@ -1,4 +1,5 @@
 """Asserts that all necessary components are functional."""
+
 import os
 import sys
 
@@ -12,7 +13,9 @@ def run_checks():
 
     if not can_import_modules():
         print("Error importing modules, are you in the correct virtual environment?")
-        print("If you created a new virtual environment, you need to install the required packages:")
+        print(
+            "If you created a new virtual environment, you need to install the required packages:"
+        )
         print("pip install -r requirements.txt")
         sys.exit(1)
     print("All required modules are importable")
@@ -40,31 +43,36 @@ def run_checks():
 def in_venv():
     return sys.prefix != sys.base_prefix
 
+
 def can_import_modules():
     try:
         import pymongo
         import redis
         import requests
         import ujson
+
         return True
     except ImportError as ex:
         print(repr(ex), file=sys.stderr)
         return False
+
 
 def can_import_our_modules():
     try:
         import analysis
         import smime_chain_verifier
+
         return True
     except ImportError as ex:
         print(repr(ex), file=sys.stderr)
         return False
 
+
 def db_is_okay():
     from analysis.utils.aggregate import aggregate_certs
 
     try:
-        count_certs_pipeline = [{"$count": "count"}]
+        count_certs_pipeline = [{"$sort": {"_id": 1}}, {"$count": "count"}]
         count_result = aggregate_certs(count_certs_pipeline)
         assert count_result
         total_certs = count_result[0].get("count")
@@ -74,8 +82,10 @@ def db_is_okay():
         print(repr(ex), file=sys.stderr)
         return False
 
+
 def redis_is_okay():
     from smime_chain_verifier.cache.cache import Cache
+
     try:
         cache = Cache("localhost")
         cache.get_cached_access_locations()
@@ -84,8 +94,11 @@ def redis_is_okay():
         print(repr(ex), file=sys.stderr)
         return False
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     if os.uname().nodename != "smine-artifact-eval":
-        print("This script is only intended to run on the machine provided to the AE reviewers.")
+        print(
+            "This script is only intended to run on the machine provided to the AE reviewers."
+        )
         sys.exit(1)
     run_checks()
