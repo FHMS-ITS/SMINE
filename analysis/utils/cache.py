@@ -1,6 +1,7 @@
 import inspect
 import timeit
 from pathlib import Path
+from bson import ObjectId
 
 import ujson as json
 import os
@@ -52,7 +53,7 @@ class JsonCacheManager:
 
         try:
             with open(file_path, "w") as file:
-                json.dump(_result, file, indent=4)
+                json.dump(_result, file, indent=4, default=self.convert_objectids)
             logger.info(f"Successfully saved result to file '{name}'")
         except Exception:
             logger.exception(f"An error occurred while saving the file '{name}'")
@@ -79,6 +80,16 @@ class JsonCacheManager:
         file_path = os.path.join(self.base_path, f"{name}.jsonl")
         with open(file_path, "rb") as file:
             yield from (json.loads(line) for line in file)
+
+    def convert_objectids(self, obj):
+        if isinstance(obj, dict):
+            return {k: self.convert_objectids(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [self.convert_objectids(item) for item in obj]
+        elif isinstance(obj, ObjectId):
+            return str(obj)
+        else:
+            return obj
 
 
 def get_cache_name(**extra) -> str:

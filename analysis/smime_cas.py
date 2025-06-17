@@ -135,7 +135,7 @@ def generate_cdf(data_direct_issuer, data_root_ca):
     plt.tight_layout()
     os.makedirs("assets/cache/diagrams/", exist_ok=True)
     plt.savefig(
-        "assets/cache/diagrams/cdf_certificates_issued.png",
+        "assets/cache/diagrams/cdf_certificates_issued.pdf",
         dpi=300,
         bbox_inches="tight",
     )

@@ -379,3 +379,5 @@ cython_debug/
 
 # GeoIP databases
 *.mmdb
+
+assets/

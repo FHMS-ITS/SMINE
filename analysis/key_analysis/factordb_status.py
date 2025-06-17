@@ -1,6 +1,6 @@
 import logging
 from analysis.utils.log import set_up_logging
-from analysis.utils.aggregate import aggregate_certs
+from analysis.utils.aggregate import aggregate_certs, aggregate_certs_batchwise, reduce_groups
 from analysis.utils.cache import JsonCacheManager, get_cache_name
 import os
 import sys
@@ -64,7 +64,8 @@ def get_factordb_status_smime(total_rsa_keys: int, refresh: bool = False):
     ]
 
     json_cache.start_timer()
-    result = aggregate_certs(pipeline=pipeline)
+    result = aggregate_certs_batchwise(pipeline=pipeline)
+    result = reduce_groups(result, group_by=("_id",))
     latex_str_list = ["factordb status & \\# \\\\"]
     for entry in result:
         e_status = entry.get("_id").get("status")

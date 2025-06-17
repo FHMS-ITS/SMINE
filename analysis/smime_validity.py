@@ -216,7 +216,7 @@ def generate_cumulative_diagram_trust(data: list[dict[str, int]]) -> None:
     ax.set_xlim(-100, 4000)
 
     plt.tight_layout()
-    plt.savefig("smime_validity_cumulative_trust.pdf", dpi="figure")
+    plt.savefig("assets/cache/diagrams/smime_validity_cumulative_trust.pdf", dpi="figure")
     plt.show()
 
 

@@ -471,7 +471,7 @@ def generate_detail_diagram_condensed(data: list[dict], rsa_data: list[dict]) ->
     ax2.tick_params(axis="y", labelsize=FONT_SIZE)
 
     plt.tight_layout()
-    plt.savefig("smime_key_algorithm_detailed_condensed.pdf", dpi="figure")
+    plt.savefig("assets/cache/diagrams/smime_key_algorithm_detailed_condensed.pdf", dpi="figure")
     plt.show()
 
 
