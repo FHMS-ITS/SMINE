@@ -61,6 +61,7 @@ def get_moduli_for_fastgcd(refresh: bool = False):
     ]
 
     logger.info("Exporting rsa moduli")
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     print(comment)
     json_cache.save(cache_name, result, comment=comment)

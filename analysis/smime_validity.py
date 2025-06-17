@@ -99,6 +99,7 @@ def get_validity_periods_with_trust(refresh: bool = False):
         },
     ]
 
+    json_cache.start_timer()
     result = aggregate_batchwise("chain", pipeline=pipeline)
 
     result = reduce_groups(

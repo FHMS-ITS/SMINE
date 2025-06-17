@@ -53,6 +53,7 @@ def get_issuer_org_name_grouped(refresh: bool = False):
     ]
 
     logger.info("Executing issuer organization name group query")
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("ca",))
     result = sorted(result, key=lambda x: x["total"], reverse=True)
@@ -169,6 +170,7 @@ def get_root_org_name_grouped(refresh: bool = False):
     ]
 
     logger.info("Executing root organization name group query")
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("ca",))
     result = sorted(result, key=lambda x: x["total"], reverse=True)
@@ -228,6 +230,7 @@ def get_grouped_root_cas_for_certs_with_valid_chains(refresh: bool = False):
     ]
 
     logger.info("Executing grouped root CAs for certs with valid chains")
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(
         result,
@@ -429,6 +432,7 @@ def get_issuers_grouped(refresh: bool = False):
     ]
 
     logger.info("Executing issuer group query")
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("_id",))
     print(f"Total smime issuer: {len(result)}")
@@ -476,6 +480,7 @@ def get_grouped_validation_results(refresh: bool = False):
     ]
 
     logger.info("Executing grouped validation results query")
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(
         result,
@@ -599,6 +604,7 @@ def get_most_common_chain_validation_error_reasons(refresh: bool = False):
     ]
 
     logger.info("Executing most common chain validation error reasons query")
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(
         result,

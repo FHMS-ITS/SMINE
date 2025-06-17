@@ -205,6 +205,7 @@ def get_pwned_blocklist_smime_certs_stats(refresh: bool = False):
     ]
 
     logger.info("Executing pwnedkeys and badkeys blocklist merged query")
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     categorize_entries(result)
 

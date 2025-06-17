@@ -68,8 +68,9 @@ def count_smime_certificates_br_published(refresh=False):
         {"$group": {"_id": None, "count": {"$sum": 1}}},
     ]
 
+    json_cache.start_timer()
     result = aggregate_batchwise("certificates", pipeline=pipeline, processes=60)
-    result = reduce_groups(result=result, group_by=("_id",))
+    result = reduce_groups(results=result, group_by=("_id",))
 
     number_of_smime_certs = result[0].get("count")
 
@@ -302,6 +303,7 @@ def get_br_error_count(refresh: bool = False) -> dict:
         {"$group": {"_id": "$codes", "count": {"$count": {}}}},
     ]
 
+    json_cache.start_timer()
     result = aggregate_batchwise("pkilint", pipeline=pipeline, processes=60)
 
     result = reduce_groups(results=result, group_by=("_id",))
@@ -349,6 +351,7 @@ def get_valid_too_long(refresh: bool = False):
             }
         },
     ]
+    json_cache.start_timer()
     result = aggregate_batchwise("pkilint", pipeline=pipeline, processes=60)
 
     result = reduce_groups(result, group_by=("_id",))
@@ -398,6 +401,7 @@ def get_incorrect_revocation(refresh: bool = False):
             }
         },
     ]
+    json_cache.start_timer()
     result = aggregate_batchwise("pkilint", pipeline=pipeline, processes=60)
 
     result = reduce_groups(result, group_by=("_id",))
@@ -449,6 +453,7 @@ def get_br_category_counts(refresh: bool = False):
             }
         },
     ]
+    json_cache.start_timer()
     result = aggregate_batchwise("pkilint", pipeline=pipeline, processes=60)
 
     result = reduce_groups(result, group_by=("_id",))
@@ -502,6 +507,7 @@ def get_br_category_counts_no_policy(refresh: bool = False):
         },
     ]
 
+    json_cache.start_timer()
     result = aggregate_batchwise("pkilint", pipeline=pipeline, processes=60)
 
     result = reduce_groups(result, group_by=("_id",))
@@ -582,6 +588,7 @@ def get_br_category_counts_by_ca(refresh: bool = False):
             }
         },
     ]
+    json_cache.start_timer()
     result = aggregate_batchwise("chain", pipeline=pipeline, processes=60)
 
     result = reduce_groups(result, group_by=("_id",))
@@ -648,6 +655,7 @@ def get_br_error_counts_by_ca(refresh: bool = False):
         },
         {"$project": {"_id": "$_id.root_ca", "code": "$_id.codes", "count": 1}},
     ]
+    json_cache.start_timer()
     result = aggregate_batchwise("chain", pipeline=pipeline, processes=60)
 
     result = reduce_groups(result, group_by=("_id", "code"))
@@ -675,6 +683,7 @@ def get_no_aia(refresh=False):
             }
         },
     ]
+    json_cache.start_timer()
     result = aggregate_batchwise("certificates", pipeline=pipeline, processes=60)
 
     result = reduce_groups(result, group_by=("_id",))
@@ -705,6 +714,7 @@ def get_aia_without_issuers(refresh=False):
             }
         },
     ]
+    json_cache.start_timer()
     result = aggregate_batchwise("certificates", pipeline=pipeline, processes=60)
 
     result = reduce_groups(result, group_by=("_id",))
@@ -736,6 +746,7 @@ def get_without_ocsp_or_crl(refresh=False):
             }
         },
     ]
+    json_cache.start_timer()
     result = aggregate_batchwise("certificates", pipeline=pipeline, processes=60)
 
     result = reduce_groups(result, group_by=("_id",))
@@ -763,6 +774,7 @@ def get_no_eku(refresh=False):
             }
         },
     ]
+    json_cache.start_timer()
     result = aggregate_batchwise("certificates", pipeline=pipeline, processes=60)
 
     result = reduce_groups(result, group_by=("_id",))
@@ -944,6 +956,7 @@ def get_trust_by_month(refresh=False):
             }
         },
     ]
+    json_cache.start_timer()
     result = aggregate_batchwise(
         "chain", pipeline=pipeline, processes=80, batch_size=100000
     )
@@ -1184,6 +1197,7 @@ def get_policy_data(refresh=False):
         {"$project": {"pkilint": {"$arrayElemAt": ["$pkilint.pkilint", 0]}}},
         {"$group": {"_id": "$pkilint.certificate_type", "count": {"$sum": 1}}},
     ]
+    json_cache.start_timer()
     result = aggregate_batchwise("certificates", pipeline=pipeline, processes=60)
 
     result = reduce_groups(result, group_by=("_id",))

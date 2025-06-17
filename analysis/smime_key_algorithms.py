@@ -36,6 +36,7 @@ def get_key_algorithms(refresh: bool = False) -> list[dict]:
         {"$project": {"_id": 0, "algorithm": "$_id", "total": 1}},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("algorithm",))
     json_cache.save(cache_name, result)
@@ -81,6 +82,7 @@ def get_key_algorithms_with_date(refresh: bool = False):
         },
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("algorithm", "parameters", "date"))
     json_cache.save(cache_name, result)
@@ -155,6 +157,7 @@ def get_issued_rsa_certs_per_month(refresh: bool = False) -> list[dict]:
     ]
 
     logger.info("Executing rsa key length query")
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("rsa_key_len", "dateString"))
     for entry in result:

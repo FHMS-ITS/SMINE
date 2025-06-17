@@ -234,6 +234,7 @@ def get_email_addresses(refresh: bool = False):
         },
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
 
     json_cache.save(cache_name, result, comment=comment)

@@ -21,6 +21,7 @@ def get_total_certs_count(refresh: bool = False):
 
     pipeline = [{"$sort": {"_id": 1}}, {"$count": "totalDocuments"}]
 
+    json_cache.start_timer()
     result1 = aggregate_certs(pipeline=pipeline)
     totalCerts = result1[0].get("totalDocuments")
 
@@ -59,6 +60,7 @@ def get_key_usage_count(total_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     ku_count = sum(r.get("count") for r in result)
     json_cache.save(
@@ -111,6 +113,7 @@ def get_extended_key_usage_count(ku_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     eku_count = sum(r.get("count") for r in result)
     json_cache.save(
@@ -173,6 +176,7 @@ def get_no_eku_and_email_count(no_eku_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     email_count = sum(r.get("count") for r in result)
     json_cache.save(
@@ -234,6 +238,7 @@ def get_eku_and_ep_or_any_count(eku_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     ep_or_any_count = sum(r.get("count") for r in result)
     json_cache.save(
@@ -307,6 +312,7 @@ def get_ep_or_any_and_email_count(ep_or_any_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     ep_or_any_and_email_count = sum(r.get("count") for r in result)
     json_cache.save(

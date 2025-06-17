@@ -27,6 +27,7 @@ def badkey_classes(refresh: bool = False):
         {"$project": {"badkeys.results": 1}},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     count = len(result)
     latex_str = ["Number of certificates affected in total"]
@@ -288,6 +289,7 @@ def get_chain_stats_for_badkeys_test_smime_certs(
     ]
 
     logger.info(f"Executing {badkeys_test_name} query")
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     categorize_entries(result)
 

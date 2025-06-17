@@ -31,6 +31,7 @@ def get_total_rsa_keys_smime(refresh: bool = False):
         {"$count": "total_rsa_keys"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     count_rsa_keys = result[0].get("total_rsa_keys")
     print(comment)
@@ -62,6 +63,7 @@ def get_factordb_status_smime(total_rsa_keys: int, refresh: bool = False):
         },
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     latex_str_list = ["factordb status & \\# \\\\"]
     for entry in result:
@@ -264,6 +266,7 @@ def get_chain_stats_for_factordb_smime_certificates(refresh: bool = False):
         {"$sort": {"total_per_group": -1}},
     ]
 
+    json_cache.start_timer()
     logger.info("Executing factordb chain stats query")
     result = aggregate_certs(pipeline=pipeline)
     categorize_entries(result)
