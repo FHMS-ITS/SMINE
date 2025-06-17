@@ -32,6 +32,7 @@ To use the tools and scripts in this repository, you will need to have Python >=
 We recommend using a virtual environment to manage dependencies.
 
 ```shell
+apt install libsasl2-dev python-dev-is-python3 libldap2-dev libssl-dev
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
