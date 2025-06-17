@@ -62,7 +62,7 @@ def can_import_modules():
 
 
 def python_path_is_set():
-    return "/home/certdb/SMINE" in sys.path
+    return os.getenv("PYTHONPATH") == "/home/certdb/SMINE"
 
 
 def can_import_our_modules():
