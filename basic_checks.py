@@ -20,10 +20,14 @@ def run_checks():
         sys.exit(1)
     print("All required modules are importable")
 
-    if not can_import_our_modules():
-        print("Error importing our modules, did you set the PYTHONPATH correctly?")
-        print("From ~/SMIME run:")
+    if not python_path_is_set():
+        print("Please set the PYTHONPATH. In ~/SMIME run:")
         print("export PYTHONPATH=$(pwd)")
+        sys.exit(1)
+    print("PYTHONPATH is set correctly")
+
+    if not can_import_our_modules():
+        print("Error importing our modules, please contact authors.")
         sys.exit(1)
     print("All our modules are importable")
 
@@ -55,6 +59,10 @@ def can_import_modules():
     except ImportError as ex:
         print(repr(ex), file=sys.stderr)
         return False
+
+
+def python_path_is_set():
+    return "/home/certdb/SMINE" in sys.path
 
 
 def can_import_our_modules():
