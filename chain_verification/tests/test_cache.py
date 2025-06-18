@@ -58,7 +58,7 @@ upRyzQ7qDn1X8nn8N8V7YJ6y68AtkHcNSRAnpTitxBKjtKPISLMVCx7i4hncxHZS
 yLyKQXhw2W2Xs0qLeC1etA+jTGDK4UfLeC0SF7FSi8o5LL21L8IzApar2pR/
 -----END CERTIFICATE-----"""
         self.cert_b = x509CertificateParser().parse(self.pem_b)
-        self.cache = Cache("localhost")
+        self.cache = Cache("localhost",port=16379)
         self.cache.clear()
 
     def tearDown(self) -> None:
