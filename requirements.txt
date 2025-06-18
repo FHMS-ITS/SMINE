@@ -10,7 +10,6 @@ gmpy2
 sympy
 galois
 jc
-bson
 geoip2
 scipy
 seaborn
