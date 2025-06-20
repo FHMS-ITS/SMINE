@@ -381,3 +381,4 @@ cython_debug/
 *.mmdb
 
 assets/
+ldap_crawler/crawls
