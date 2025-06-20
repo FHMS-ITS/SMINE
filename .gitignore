@@ -382,3 +382,4 @@ cython_debug/
 
 assets/
 ldap_crawler/crawls
+processing/results.json
