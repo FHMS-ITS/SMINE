@@ -31,7 +31,7 @@ eTXk0w/Q52qpts/mrzL+
         self.cert = x509CertificateParser().parse(self.pem)
         self.chains = [[self.cert, self.cert], [self.cert]]
         self.cached_cert = CachedCertificate(self.cert, "mozilla", self.chains)
-        self.redis = Redis(host="localhost")
+        self.redis = Redis(host="localhost",port=16379)
 
     def test_init(self):
         self.assertEqual(self.cached_cert.cert, self.cert)

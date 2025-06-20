@@ -62,7 +62,7 @@ XZJt2zyxCI5FPKw=
         self.mozilla_intermediate_cert = x509CertificateParser().parse(
             self.mozilla_intermediate_pem
         )
-        self.cache = Cache("localhost")
+        self.cache = Cache("localhost",port=16379)
 
     def tearDown(self) -> None:
         self.cache.clear()
