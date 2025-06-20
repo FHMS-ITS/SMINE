@@ -5,10 +5,10 @@ This project includes tests for validating the functionality of the certificate 
 
 
 ## Quick Start
-Make sure the **test-specific Redis instance** is running before executing the tests.  
+Make sure the **test-specific Redis instance** (container name: `redis-test`) is running before executing the tests.  
 
 ```shell 
-docker run --name redis -p 16379:16379 -d redis
+docker ps
 python tests/run_all_tests.py
 ```
 
