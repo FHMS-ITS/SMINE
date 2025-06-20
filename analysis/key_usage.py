@@ -46,6 +46,7 @@ def get_extended_key_usages(*, smime: bool, refresh: bool = False) -> list[dict]
         {"$sort": {"count": -1}},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("ex_key_usage",))
     json_cache.save(cache_name, result)
@@ -82,6 +83,7 @@ def get_key_usage_and_extended_key_usages(
         {"$sort": {"count": -1}},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("extended_key_usage", "key_usage"))
     json_cache.save(cache_name, result)

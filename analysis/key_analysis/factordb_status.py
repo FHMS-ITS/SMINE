@@ -1,6 +1,6 @@
 import logging
 from analysis.utils.log import set_up_logging
-from analysis.utils.aggregate import aggregate_certs
+from analysis.utils.aggregate import aggregate_certs, aggregate_certs_batchwise, reduce_groups
 from analysis.utils.cache import JsonCacheManager, get_cache_name
 import os
 import sys
@@ -31,6 +31,7 @@ def get_total_rsa_keys_smime(refresh: bool = False):
         {"$count": "total_rsa_keys"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     count_rsa_keys = result[0].get("total_rsa_keys")
     print(comment)
@@ -62,7 +63,9 @@ def get_factordb_status_smime(total_rsa_keys: int, refresh: bool = False):
         },
     ]
 
-    result = aggregate_certs(pipeline=pipeline)
+    json_cache.start_timer()
+    result = aggregate_certs_batchwise(pipeline=pipeline)
+    result = reduce_groups(result, group_by=("_id",))
     latex_str_list = ["factordb status & \\# \\\\"]
     for entry in result:
         e_status = entry.get("_id").get("status")
@@ -264,6 +267,7 @@ def get_chain_stats_for_factordb_smime_certificates(refresh: bool = False):
         {"$sort": {"total_per_group": -1}},
     ]
 
+    json_cache.start_timer()
     logger.info("Executing factordb chain stats query")
     result = aggregate_certs(pipeline=pipeline)
     categorize_entries(result)

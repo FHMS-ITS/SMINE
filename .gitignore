@@ -379,3 +379,7 @@ cython_debug/
 
 # GeoIP databases
 *.mmdb
+
+assets/
+ldap_crawler/crawls
+processing/results.json

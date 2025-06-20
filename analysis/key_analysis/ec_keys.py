@@ -66,6 +66,8 @@ logging.basicConfig(
     ],
 )
 
+CACHE_PATH = os.path.join("assets", "cache")
+json_cache = JsonCacheManager(CACHE_PATH)
 
 def run_and_save_batch(args: tuple, **kwargs):
     result = aggregate_batch(*args, **kwargs)
@@ -834,10 +836,11 @@ def parallel_checks(
     Run the ECC certificate checks in parallel using multiprocessing.
     """
     cache_name = get_cache_name()
-    if not refresh and (result := JsonCacheManager(CACHE_PATH).load(cache_name)):
+    if not refresh and (result := json_cache.load(cache_name)):
         return result
 
     start = datetime.now()
+    json_cache.start_timer()
     print("## Start of ECC cert check ##\n")
     print(start)
 
@@ -912,7 +915,7 @@ def parallel_checks(
         keyInvalid,
         invalidCertNames.getvalue(),
     ]
-    JsonCacheManager(CACHE_PATH).save(cache_name, res)
+    json_cache.save(cache_name, res)
     return res
 
 
@@ -993,7 +996,6 @@ def print_results(
 
 
 WRITE_EXCEPTION_FILES = False
-CACHE_PATH = os.path.join("assets", "cache")
 CERTS_DIR = os.path.join("assets", "ec_certs")
 MAX_PROCS = 80
 if __name__ == "__main__":

@@ -19,11 +19,12 @@ Additionally, CAs should improve the distribution of certificate chains to impro
 
 ## Contents
 This repository consists of the following subdirectories:
-- [**LDAP Crawler**](ldap_crawler): Tooling for crawling public LDAP servers to collect S/MIME certificates.
+- [**Server IPs**](server_ips): Contains the IP addresses of the servers discovered by our zmap scans on ports 389 and 636 as well as the IP addresses of the servers from which we collected certificates.
+- [**LDAP Crawler**](ldap_crawler): Our tool for crawling LDAP servers to collect S/MIME certificates.
 - [**Processing**](processing): Scripts used to parse and process the collected certificates.
 - [**Chain Verification**](chain_verification): Tool that reconstructs and verifies the certificate chains, used in processing.
 - [**Analysis**](analysis): Scripts for analyzing the collected certificates and generating statistics.
-- [**Server IPs**](server_ips): Contains the IP addresses of the servers discovered by the zmap scans, and those from which the certificates were collected.
+
 
 Each subdirectory contains a `README.md` file with more detailed information about its contents and usage.
 
@@ -32,6 +33,7 @@ To use the tools and scripts in this repository, you will need to have Python >=
 We recommend using a virtual environment to manage dependencies.
 
 ```shell
+apt install libsasl2-dev python-dev-is-python3 libldap2-dev libssl-dev
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt

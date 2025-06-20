@@ -187,6 +187,7 @@ def get_fastgcd_smime_certs_stats(refresh: bool = False):
     ]
 
     logger.info("Executing FastGCD query")
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     categorize_entries(result)
 

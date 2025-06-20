@@ -22,6 +22,7 @@ def count_certificates(refresh: bool = False) -> int:
 
     pipeline = [{"$sort": {"_id": 1}}, {"$count": "count"}]
 
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     number_of_certs = result[0].get("count")
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -40,6 +41,7 @@ def count_smime_certificates(refresh: bool = False) -> int:
 
     pipeline = [{"$match": {"is_smime.is_smime": True}}, {"$count": "count"}]
 
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     number_of_smime_certs = result[0].get("count")
     json_cache.save(cache_name, {"count": number_of_smime_certs}, comment=comment)

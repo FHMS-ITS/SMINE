@@ -136,6 +136,7 @@ def get_crawled_hosts_per_month(refresh: bool = False):
     ]
 
     logger.info("Executing hosts query")
+    json_cache.start_timer()
     result = aggregate(collection_name="hosts", pipeline=pipeline)
     total_hosts_list = [entry.get("total_host") for entry in result]
     avg_hosts_per_scan = (

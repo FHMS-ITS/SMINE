@@ -59,6 +59,7 @@ def get_total_certs_per_host_country(
 
     logger.info("Executing total smime certificates per host country query")
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("country",))
     json_cache.save(
@@ -119,6 +120,7 @@ def get_total_certs_per_host(only_smime: bool, refresh: bool = False) -> list[di
 
     logger.info("Executing total smime certificates per host query")
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("ip", "country", "continent"))
     json_cache.save(cache_name, result, comment="Number of smime certificates per host")
@@ -168,6 +170,7 @@ def get_total_certs_per_host_continent(
 
     logger.info("Executing total smime certificates per host continent query")
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("continent",))
     json_cache.save(
@@ -209,6 +212,7 @@ def get_hosts_per_certs(refresh: bool = False):
 
     logger.info("Executing total hosts per smime certificate query")
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("host_count",))
     json_cache.save(cache_name, result, comment=comment)

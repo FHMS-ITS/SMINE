@@ -91,6 +91,7 @@ def get_total_certs_and_cert_ids_per_host(refresh: bool = False):
     ]
 
     logger.info("Executing total certificates and cert ids per host query")
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(result, group_by=("ip",))
     result = sorted(result, key=lambda x: x["total"], reverse=True)

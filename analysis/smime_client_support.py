@@ -21,6 +21,7 @@ def get_total_certs_count(refresh: bool = False):
 
     pipeline = [{"$sort": {"_id": 1}}, {"$count": "count"}]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
 
@@ -50,6 +51,7 @@ def get_email_no_ku_no_eku(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -91,6 +93,7 @@ def get_email_ku_all_no_eku(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -132,6 +135,7 @@ def get_email_no_key_enc_eku_ep(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -173,6 +177,7 @@ def get_email_no_key_enc_no_eku(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -214,6 +219,7 @@ def get_no_email_ku_all_eku_ep(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -255,6 +261,7 @@ def get_email_ku_all_eku_ep(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -303,6 +310,7 @@ def get_email_ku_all_eku_any(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -339,6 +347,7 @@ def get_email_no_ku_eku_any(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -368,6 +377,7 @@ def get_email_no_ku_eku_ep(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -416,6 +426,7 @@ def get_email_no_key_enc_eku_any(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -457,6 +468,7 @@ def get_email_only_key_enc_eku_ep(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -505,6 +517,7 @@ def get_email_only_key_enc_eku_any(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -546,6 +559,7 @@ def get_email_only_key_enc_no_eku(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -594,6 +608,7 @@ def get_no_email_ku_all_eku_any(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)
@@ -635,6 +650,7 @@ def get_no_email_ku_all_no_eku(total_certs_count, refresh: bool = False):
         {"$count": "count"},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     number_of_certs = sum(r.get("count", 0) for r in result)
     json_cache.save(cache_name, {"count": number_of_certs}, comment=comment)

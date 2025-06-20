@@ -176,6 +176,7 @@ def get_affected_certs_count(refresh: bool = False):
     ]
 
     logger.info("Executing weak key smime certificates query")
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     categorize_entries(result)
 
@@ -255,6 +256,7 @@ def get_affected_certs_count_batchwise(refresh: bool = False):
     ]
 
     logger.info("Executing weak key smime certificates query")
+    json_cache.start_timer()
     result = aggregate_certs_batchwise(pipeline=pipeline)
     result = reduce_groups(
         result, group_by=("publicly_trusted", "historical", "val_result")

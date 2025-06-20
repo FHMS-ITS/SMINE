@@ -99,6 +99,7 @@ def get_validity_periods_with_trust(refresh: bool = False):
         },
     ]
 
+    json_cache.start_timer()
     result = aggregate_batchwise("chain", pipeline=pipeline)
 
     result = reduce_groups(
@@ -215,7 +216,7 @@ def generate_cumulative_diagram_trust(data: list[dict[str, int]]) -> None:
     ax.set_xlim(-100, 4000)
 
     plt.tight_layout()
-    plt.savefig("smime_validity_cumulative_trust.pdf", dpi="figure")
+    plt.savefig("assets/cache/diagrams/smime_validity_cumulative_trust.pdf", dpi="figure")
     plt.show()
 
 

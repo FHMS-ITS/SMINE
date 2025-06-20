@@ -27,6 +27,7 @@ def badkey_classes(refresh: bool = False):
         {"$project": {"badkeys.results": 1}},
     ]
 
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     count = len(result)
     latex_str = ["Number of certificates affected in total"]
@@ -53,15 +54,11 @@ def badkey_classes(refresh: bool = False):
     for entry in result:
         e_badkeys = entry.get("badkeys", {})
         if not e_badkeys:
-            # print(f"entry: {entry}")
-            # print(f"e_badkeys: {e_badkeys}")
             e_id = entry.get("_id", {})
-            # print(f"e_id: {e_id}")
             if type(e_id) is str:
                 e_oid = e_id
             else:
                 e_oid = e_id.get("$oid", {})
-            # print(f"e_oid: {e_oid}")
             certificates_without_results.append(e_oid)
             logger.warning(f"Certificate {e_oid} has no badkeys field")
             continue
@@ -199,7 +196,6 @@ def get_chain_stats_for_badkeys_test_smime_certs(
     if not refresh and (result := json_cache.load(cache_name)):
         print(comment)
         categorize_entries(result)
-        # print(json.dumps(result, indent=4))
         return
 
     pipeline = [
@@ -288,6 +284,7 @@ def get_chain_stats_for_badkeys_test_smime_certs(
     ]
 
     logger.info(f"Executing {badkeys_test_name} query")
+    json_cache.start_timer()
     result = aggregate_certs(pipeline=pipeline)
     categorize_entries(result)
 
@@ -306,8 +303,6 @@ if __name__ == "__main__":
     elif len(sys.argv) == 2:
         if sys.argv[1] == "refresh":
             refresh_flag = True
-
-    # badkey_classes(refresh=refresh_flag)
 
     badkeys_test_names = [
         "roca",

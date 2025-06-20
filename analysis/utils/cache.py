@@ -1,4 +1,5 @@
 import inspect
+import timeit
 from pathlib import Path
 
 import ujson as json
@@ -15,42 +16,40 @@ logger = logging.getLogger(__name__)
 class JsonCacheManager:
     def __init__(self, base_path: str):
         self.base_path = base_path
+        self.start_time: float | None = None
         os.makedirs(self.base_path, exist_ok=True)
+
+    def start_timer(self) -> None:
+        """
+        Starts a timer to measure the duration of an operation.
+        """
+        self.start_time = timeit.default_timer()
 
     def save(
         self, name: str, result: list | dict, comment: str = "", latex_str: str = ""
     ):
         file_path = os.path.join(self.base_path, f"{name}.json")
         time_now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        if hasattr(result, "__iter__") and not isinstance(
-            result, (list, dict, str, bytes)
-        ):  # for mongodb cursor compatibility
-            result = _json_convert(result)
+        result = _json_convert(result)
+
+        if self.start_time is None:
+            logger.warning("Timer was not started. Duration will be set to null. Call start_timer() before saving.")
+            duration_secs = None
+        else:
+            duration_secs = timeit.default_timer() - self.start_time
+            self.start_time = None
 
         _result = {
             "last_updated": time_now,
             "comment": comment,
             "results": result,
             "latex_str": latex_str,
+            "duration_secs": duration_secs,
         }
 
         try:
             with open(file_path, "w") as file:
                 json.dump(_result, file, indent=4)
-            logger.info(f"Successfully saved result to file '{name}'")
-        except Exception:
-            logger.exception(f"An error occurred while saving the file '{name}'")
-
-    def save_json_lines(self, name: str, result: Iterable[Any]):
-        file_path = os.path.join(self.base_path, f"{name}.jsonl")
-
-        result = _json_convert(result)
-
-        try:
-            with open(file_path, "w") as file:
-                for line in result:
-                    json_line = json.dumps(line)
-                    file.write(json_line + "\n")  # JSONL = one JSON object per line
             logger.info(f"Successfully saved result to file '{name}'")
         except Exception:
             logger.exception(f"An error occurred while saving the file '{name}'")
@@ -92,11 +91,3 @@ def get_cache_name(**extra) -> str:
     if extra:
         cache_name += "." + ".".join(f"{k}-{v}" for k, v in extra.items())
     return cache_name
-
-
-if __name__ == "__main__":
-    jc = JsonCacheManager("test")
-
-    test_result = [{"r1": "1"}, {"r2": "2"}]
-
-    jc.save_json_lines("temp.json", test_result)
